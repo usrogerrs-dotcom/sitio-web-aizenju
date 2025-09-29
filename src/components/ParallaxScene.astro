@@ -79,37 +79,39 @@ const {
       const mid = document.querySelector('.parallax .layer--mid');
       if (mid) (mid).style.transform = `translate3d(0, var(--ty, 0px), 0) scale(${z.toFixed(3)})`;
 
-      // Crossfade: el fondo baja opacidad, la media sube opacidad según progreso
       /** @type {HTMLElement|null} */
       const bgEl = document.querySelector('.parallax .layer--bg');
       if (bgEl) (bgEl).style.opacity = String(lerp(1, 0.75, ease(progress)).toFixed(3));
       if (mid) (mid).style.opacity = String(lerp(0.9, 1, ease(progress)).toFixed(3));
 
-      // Texto: aparece más temprano y se desplaza levemente hacia arriba
-      /** @type {HTMLElement|null} */
+      // Texto: aparece más temprano, mayor contraste, y se desplaza levemente hacia arriba
       const txt = document.querySelector('.parallax .layer--text .caption');
       if (txt) {
-        const tText = clamp((progress - 0.2) / 0.25, 0, 1);
+        const tText = clamp((progress - 0.1) / 0.3, 0, 1);
         const eText = ease(tText);
         const tyText = lerp(16, 0, eText); // 16% -> 0%
-        (txt).style.opacity = String(eText);
+        (txt).style.color = `rgba(255,255,255, ${lerp(0.5, 1, eText).toFixed(3)})`;
         (txt).style.transform = `translateY(${tyText}%)`;
       }
 
-      // Entrada de silueta desde abajo: aparece después del 60% de scroll
+      // Silueta: emerger desde abajo y posicionarse hacia la derecha en el espacio del setup
       /** @type {HTMLElement|null} */
       const sil = document.querySelector('.parallax .silhouette[data-speed]');
       if (sil) {
         const s = parseFloat(sil.getAttribute('data-speed') || '0');
-        const t = clamp((progress - 0.6) / 0.3, 0, 1); // tramo 0.6 -> 0.9
+        // Iniciar antes para que sea más perceptible (0.45 -> 0.8)
+        const t = clamp((progress - 0.45) / 0.35, 0, 1);
         const op = lerp(0, 1, ease(t));
-        const base = 30; // parte baja
-        const target = 10; // posición final
+        const base = 36; // inicia un poco más abajo
+        const target = 8; // más arriba al finalizar
         const ty = lerp(base, target, ease(t));
         // Parallax leve + desplazamiento coreografiado
         const ypx = (y * s * -0.15);
+        // Offset horizontal hacia la derecha para ocupar el área libre del setup
+        const vw = window.innerWidth || document.documentElement.clientWidth;
+        const xpx = Math.min(160, Math.max(48, vw * 0.12));
         (sil).style.opacity = String(op);
-        (sil).style.transform = `translateY(calc(${ty}% + ${ypx.toFixed(2)}px))`;
+        (sil).style.transform = `translate3d(${xpx.toFixed(0)}px, calc(${ty}% + ${ypx.toFixed(2)}px), 0)`;
       }
     }
   };
@@ -161,12 +163,13 @@ const {
     position: absolute;
     inset: 0;
     display: grid;
-    place-items: end center;
+    /* colocar la silueta en la esquina inferior derecha */
+    place-items: end end;
     pointer-events: none;
   }
 
   .silhouette {
-    width: min(42vw, 560px);
+    width: min(46vw, 600px);
     max-width: 92%;
     filter: drop-shadow(0 24px 48px rgba(0,0,0,0.55)) saturate(0.95);
     transform: translateY(30%);
@@ -185,6 +188,35 @@ const {
 
   @media (max-width: 720px) {
     .parallax { height: 100vh; }
-    .silhouette { width: min(62vw, 400px); }
+    .silhouette { width: min(62vw, 420px); }
+  }
+
+  /* Título y texto sobre la capa de texto */
+  .layer--text .caption {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    place-items: start;
+    text-align: left;
+  }
+  .layer--text .caption__title {
+    font-size: clamp(2.4rem, 7.2vw, 5.8rem);
+    line-height: 0.95;
+    margin: 0 0 8px;
+    color: #ffffff;
+    text-shadow: 0 6px 40px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.35);
+    letter-spacing: 0.02em;
+  }
+  .layer--text .caption__text {
+    max-width: 820px;
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    color: var(--muted);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.25);
+  }
+  @media (max-width: 720px) {
+    .layer--text .caption__title { font-size: clamp(2rem, 9vw, 3rem); }
+    .layer--text .caption__text { font-size: 1rem; }
   }
 </style>
