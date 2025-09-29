@@ -26,10 +26,44 @@
                     <span class="nav__bar"></span>
                     <span class="nav__bar"></span>
                 </button>
+                <!-- Barra de iconos fija (solo móvil) -->
+                <ul class="menu menu--icons" aria-hidden="true">
+                    <li>
+                        <a href="/setups" aria-label="Setups de PC" title="Setups de PC">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h16v10H4z"/><path fill="currentColor" d="M2 18h20v2H2z"/></svg>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/servicio-tecnico" aria-label="Servicio Técnico" title="Servicio Técnico">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 015 5v1h1a3 3 0 110 6h-1l-2 4H9l-2-4H6a3 3 0 110-6h1V7a5 5 0 015-5z"/></svg>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reciclaje-laptops" aria-label="Reciclaje de laptops" title="Reciclaje de laptops">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 4h12v10H6z"/><path fill="currentColor" d="M2 16h20v2H2z"/><path fill="currentColor" d="M8 8h8v2H8z"/></svg>
+                        </a>
+                    </li>
+                </ul>
+                <!-- Menú completo (icono + texto) -->
                 <ul id="site-menu" class="menu" role="menubar">
-                    <li><a href="/setups">Setups de PC</a></li>
-                    <li><a href="/servicio-tecnico">Servicio Técnico</a></li>
-                    <li><a href="/reciclaje-laptops">Reciclaje de laptops</a></li>
+                    <li>
+                        <a href="/setups">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 6h16v10H4z"/><path fill="currentColor" d="M2 18h20v2H2z"/></svg>
+                            <span class="menu__label">Setups de PC</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/servicio-tecnico">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 015 5v1h1a3 3 0 110 6h-1l-2 4H9l-2-4H6a3 3 0 110-6h1V7a5 5 0 015-5z"/></svg>
+                            <span class="menu__label">Servicio Técnico</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reciclaje-laptops">
+                            <svg class="menu__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 4h12v10H6z"/><path fill="currentColor" d="M2 16h20v2H2z"/><path fill="currentColor" d="M8 8h8v2H8z"/></svg>
+                            <span class="menu__label">Reciclaje de laptops</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <div class="nav__backdrop" hidden></div>
@@ -114,6 +148,11 @@
         }
 
         .menu a:hover { opacity: 1; color: white; }
+        .menu a.is-active { color: var(--accent); opacity: 1; }
+        .menu a.is-active .menu__icon { color: var(--accent); }
+
+        .menu__icon { width: 18px; height: 18px; display: inline-block; vertical-align: -2px; margin-right: 8px; opacity: 0.95; }
+        .menu__label { display: inline; }
 
         .site-footer {
             border-top: 1px solid var(--border);
@@ -145,7 +184,11 @@
             color: inherit; cursor: pointer;
             align-items: center; justify-content: center; gap: 3px; flex-direction: column;
         }
-        .nav__bar { display: block; width: 20px; height: 2px; background: currentColor; border-radius: 2px; }
+        .nav__bar { display: block; width: 20px; height: 2px; background: currentColor; border-radius: 2px; transition: transform 180ms ease, opacity 180ms ease; }
+        /* Animación a X cuando está abierto */
+        .site-header.is-open .nav__bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .site-header.is-open .nav__bar:nth-child(2) { opacity: 0; }
+        .site-header.is-open .nav__bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
         .nav__backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px); display: none; }
         .site-header.is-open + .nav__backdrop, .site-header.is-open ~ .nav__backdrop { display: block; }
 
@@ -153,6 +196,20 @@
         @media (max-width: 900px) {
             .nav { padding: 10px 14px; }
             .nav__toggle { display: inline-flex; }
+            /* Barra de iconos fija bajo el header */
+            .menu--icons { 
+                position: fixed; top: 56px; left: 0; right: 0; z-index: 40;
+                display: grid; grid-auto-flow: column; justify-content: center; gap: 16px;
+                padding: 10px 12px; margin: 0; list-style: none;
+                background: rgba(0,0,0,0.35); backdrop-filter: blur(10px);
+                border-bottom: 1px solid var(--border);
+            }
+            .menu--icons a { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; color: var(--text); border: 1px solid transparent; }
+            .menu--icons a:hover { background: rgba(255,255,255,0.06); }
+            .menu--icons a.is-active { color: var(--accent); border-color: var(--border); background: rgba(124,58,237,0.08); }
+            /* El contenido debe bajar para no quedar tapado por la barra de iconos */
+            main { padding-top: 108px; }
+
             .menu {
                 position: absolute; top: 56px; right: 14px;
                 display: grid; gap: 8px; padding: 12px; margin: 0;
@@ -163,13 +220,20 @@
                 transition: transform 160ms ease, opacity 160ms ease;
             }
             .site-header.is-open .menu { transform: scale(1); opacity: 1; pointer-events: auto; }
+            /* En móvil, el menú textual aparece al abrir; los iconos permanecen anclados */
+            .menu:not(.menu--icons) .menu__label { display: inline; }
         }
 
         @media (max-width: 720px) {
             .menu { gap: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
             .menu::-webkit-scrollbar { display: none; }
             .logo-icon { height: 16px; }
-            main { padding-top: 58px; }
+            /* Conserva el mayor padding si ya fue definido por el breakpoint 900px */
+        }
+
+        /* Ocultar barra de iconos fuera de móvil */
+        @media (min-width: 901px) {
+            .menu--icons { display: none; }
         }
     </style>
     <script>
@@ -190,6 +254,7 @@
             const header = document.querySelector('.site-header');
             const toggle = document.querySelector('.nav__toggle');
             const menu = document.getElementById('site-menu');
+            const iconBar = document.querySelector('.menu--icons');
             const backdrop = document.querySelector('.nav__backdrop');
             if (!header || !toggle || !menu || !backdrop) return;
 
@@ -223,6 +288,22 @@
                 const a = (e.target && e.target.closest) ? e.target.closest('a') : null;
                 if (a) closeMenu();
             });
+
+            // Marcar enlace activo por ruta en ambos menús
+            const markActive = () => {
+                const path = location.pathname.replace(/\/$/, '') || '/';
+                const allLinks = [
+                    ...Array.from(menu.querySelectorAll('a')),
+                    ...(iconBar ? Array.from(iconBar.querySelectorAll('a')) : [])
+                ];
+                allLinks.forEach((link) => {
+                    const href = (link.getAttribute('href') || '').replace(/\/$/, '');
+                    const active = href && (href === path || (href !== '/' && path.startsWith(href)));
+                    link.classList.toggle('is-active', !!active);
+                    if (active) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+                });
+            };
+            markActive();
         })();
     </script>
 </html>
