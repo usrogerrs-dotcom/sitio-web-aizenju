@@ -11,7 +11,7 @@ const items = images.length ? images : [
 <section class="gallery" aria-label="Galería de setups de PC">
   <div class="wrap">
     <div class="mosaic" role="list">
-      {items.slice(0,5).map((src: string, i: number) => (
+      {items.slice(0,5).map((src, i) => (
         <figure class={`tile tile--${i+1}`} role="listitem" data-i={i} aria-roledescription="card" data-depth={(() => {
           // Profundidad para parallax por tile
           const depths = [0.28, 0.18, 0.2, 0.12, 0.16];
@@ -32,7 +32,10 @@ const items = images.length ? images : [
   const tiles = Array.from(document.querySelectorAll('.tile'));
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
-      if (e.isIntersecting) (e.target as HTMLElement).classList.add('is-in');
+      const el = e.target;
+      if (e.isIntersecting && el && 'classList' in el) {
+        (el).classList.add('is-in');
+      }
     });
   }, { rootMargin: '0px 0px -10% 0px', threshold: 0.2 });
   tiles.forEach((t, idx) => { t.style.setProperty('--delay', `${idx * 90}ms`); io.observe(t); });

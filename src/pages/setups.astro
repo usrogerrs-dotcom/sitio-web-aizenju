@@ -8,7 +8,7 @@ const PRICE_ESET = import.meta.env.PUBLIC_PRICE_ID_ESET as string | undefined;
 const PRICE_M365 = import.meta.env.PUBLIC_PRICE_ID_M365 as string | undefined;
 const PRICE_WIN11 = import.meta.env.PUBLIC_PRICE_ID_WIN11 as string | undefined;
 // Precios locales (PEN) si no hay priceId en Stripe
-const LOCAL_PEN = 'pen';
+const LOCAL_PEN = 'PEN';
 const ESET_ANTES_CENTS = 12189; // S/ 121.89
 const ESET_AHORA_CENTS = 3656;  // S/ 36.56 (70% dcto aprox)
 const M365_ANTES_CENTS = 30899; // S/ 308.99
@@ -170,6 +170,7 @@ const WIN11_AHORA_CENTS = 9999;  // S/ 99.99 (90% dcto)
 </style>
 
 <script>
+  // @ts-nocheck
   // Manejar compras por licencia individual con Stripe Checkout
   document.addEventListener('click', async (e) => {
     const target = e.target;

@@ -23,7 +23,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div class="field">
               <label>Año aproximado</label>
-              <input name="anio" type="number" min="1995" max="{new Date().getFullYear()}" placeholder="Ej. 2019" />
+              <input name="anio" type="number" min="1995" max="2100" placeholder="Ej. 2019" />
             </div>
             <div class="field">
               <label>Estado general</label>
@@ -99,47 +99,49 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+  // @ts-nocheck
   // Estado del asistente
   let step = 1;
   const total = 3;
   const steps = document.querySelectorAll('.step');
-  const prevBtn = document.getElementById('prevBtn')!;
-  const nextBtn = document.getElementById('nextBtn')!;
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
   const submitBtn = document.getElementById('submitBtn');
   const summaryEl = document.getElementById('summary');
 
-  function go(n: number) {
+  function go(n) {
     step = Math.min(total, Math.max(1, n));
     steps.forEach(s => s.classList.toggle('is-active', Number(s.getAttribute('data-step')) === step));
-    prevBtn.toggleAttribute('disabled', step === 1);
-    nextBtn.style.display = step === total ? 'none' : '';
+    prevBtn && prevBtn.toggleAttribute('disabled', step === 1);
+    if (nextBtn) nextBtn.style.display = step === total ? 'none' : '';
     if (submitBtn) submitBtn.style.display = step === total ? '' : 'none';
     // Mostrar/ocultar dirección si eligió envío
-    const method = (document.querySelector('input[name="entrega"]:checked') as HTMLInputElement)?.value;
-    const envioBlock = document.querySelector('[data-when="envio"]') as HTMLElement | null;
-    if (envioBlock) envioBlock.style.display = method === 'envio' ? '' : 'none';
+    const checkedEntrega = document.querySelector('input[name="entrega"]:checked');
+    const method = checkedEntrega ? checkedEntrega.value : '';
+    const envioBlock = document.querySelector('[data-when="envio"]');
+    if (envioBlock && 'style' in envioBlock) envioBlock.style.display = method === 'envio' ? '' : 'none';
     if (step === total) buildSummary();
   }
 
   prevBtn.addEventListener('click', () => go(step - 1));
   nextBtn.addEventListener('click', () => go(step + 1));
   document.addEventListener('change', (e) => {
-    const t = e.target as HTMLInputElement;
+    const t = e.target;
     if (t && t.name === 'entrega') go(step); // refrescar visibilidad
   });
 
   function buildSummary() {
-    const f1 = Object.fromEntries(new FormData(document.getElementById('form-1') as HTMLFormElement).entries());
-    const f2 = Object.fromEntries(new FormData(document.getElementById('form-2') as HTMLFormElement).entries());
-    const f3 = Object.fromEntries(new FormData(document.getElementById('form-3') as HTMLFormElement).entries());
-    const data = { ...f1, ...f2, ...f3 } as Record<string, string>;
-    summaryEl!.textContent = JSON.stringify(data, null, 2);
+    const f1 = (() => { const el = document.getElementById('form-1'); return el ? Object.fromEntries(new FormData(el).entries()) : {}; })();
+    const f2 = (() => { const el = document.getElementById('form-2'); return el ? Object.fromEntries(new FormData(el).entries()) : {}; })();
+    const f3 = (() => { const el = document.getElementById('form-3'); return el ? Object.fromEntries(new FormData(el).entries()) : {}; })();
+    const data = { ...f1, ...f2, ...f3 };
+    if (summaryEl) summaryEl.textContent = JSON.stringify(data, null, 2);
   }
 
   submitBtn?.addEventListener('click', async () => {
     buildSummary();
     // Aquí podríamos enviar a una API/Sheet/Email. De momento, mailto con resumen.
-    const body = encodeURIComponent(summaryEl!.textContent || '');
+    const body = encodeURIComponent((summaryEl && summaryEl.textContent) || '');
     window.location.href = `mailto:contacto@aizenju.com?subject=Solicitud%20de%20reciclaje&body=${body}`;
   });
 

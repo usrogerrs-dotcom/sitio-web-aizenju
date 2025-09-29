@@ -100,32 +100,25 @@ const { products = [] } = Astro.props as {
 
 <script>
   // Leer datos serializados desde el DOM para evitar problemas de interpolación
-  const svcProducts = JSON.parse(document.getElementById('svc-products')!.textContent || '[]') as Array<{
-    key: string;
-    title: string;
-    image: string;
-    issues: string[];
-    eta: string;
-    helpModelImg?: string;
-    helpSerieImg?: string;
-    helpModelText?: string;
-    helpSerieText?: string;
-  }>;
+  const svcProductsRaw = document.getElementById('svc-products');
+  const svcProducts = (() => {
+    try { return JSON.parse((svcProductsRaw && svcProductsRaw.textContent) || '[]'); } catch { return []; }
+  })();
   let index = 0;
 
-  const imgEl = document.querySelector('.svc__img') as HTMLImageElement | null;
-  const titleEl = document.querySelector('.svc__title') as HTMLElement | null;
-  const formEl = document.getElementById('issues-form') as HTMLFormElement | null;
-  const etaEl = document.querySelector('.eta__value') as HTMLElement | null;
+  const imgEl = document.querySelector('.svc__img');
+  const titleEl = document.querySelector('.svc__title');
+  const formEl = document.getElementById('issues-form');
+  const etaEl = document.querySelector('.eta__value');
   const navButtons = document.querySelectorAll('.nav');
   const body = document.body;
   const openButtons = document.querySelectorAll('[data-open]');
   const modalModelo = document.getElementById('modal-modelo');
   const modalSerie = document.getElementById('modal-serie');
-  const imgModelo = document.getElementById('img-modelo') as HTMLImageElement | null;
-  const imgSerie = document.getElementById('img-serie') as HTMLImageElement | null;
-  const textModelo = document.getElementById('text-modelo') as HTMLElement | null;
-  const textSerie = document.getElementById('text-serie') as HTMLElement | null;
+  const imgModelo = document.getElementById('img-modelo');
+  const imgSerie = document.getElementById('img-serie');
+  const textModelo = document.getElementById('text-modelo');
+  const textSerie = document.getElementById('text-serie');
 
   const DEFAULT_MODEL_IMG = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop';
   const DEFAULT_SERIE_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop';
@@ -136,10 +129,10 @@ const { products = [] } = Astro.props as {
     ['serie', modalSerie],
   ]);
 
-  function render(i: number) {
+  function render(i) {
     const p = svcProducts[i];
     if (!p) return;
-    if (imgEl) { imgEl.src = p.image; imgEl.alt = p.title; }
+    if (imgEl) { imgEl.setAttribute('src', p.image); imgEl.setAttribute('alt', p.title); }
     if (titleEl) { titleEl.textContent = p.title; }
     if (etaEl) { etaEl.textContent = p.eta; }
     if (formEl) {
@@ -160,23 +153,23 @@ const { products = [] } = Astro.props as {
     }
   }
 
-  function move(dir: number) {
+  function move(dir) {
     index = (index + dir + svcProducts.length) % svcProducts.length;
     render(index);
   }
 
   navButtons.forEach(btn => btn.addEventListener('click', () => {
-    const dir = Number((btn as HTMLElement).dataset.dir || '1');
+    const dir = Number((btn && btn.dataset ? btn.dataset.dir : '1') || '1');
     move(dir);
   }));
 
   // Iniciar pago con Stripe Checkout
-  const payBtn = document.querySelector('.svc__right .btn--primary') as HTMLButtonElement | null;
+  const payBtn = document.querySelector('.svc__right .btn--primary');
   payBtn?.addEventListener('click', async () => {
     try {
       const p = svcProducts[index];
       if (!p) return;
-      const checked = Array.from(document.querySelectorAll('input[name="issues"]:checked')) as HTMLInputElement[];
+      const checked = Array.from(document.querySelectorAll('input[name="issues"]:checked'));
       const issues = checked.map(i => i.value);
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -185,7 +178,7 @@ const { products = [] } = Astro.props as {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.url) {
-        window.location.href = data.url as string;
+        window.location.href = data.url;
       } else {
         alert(data?.error || 'No se pudo iniciar el pago.');
       }
@@ -196,7 +189,7 @@ const { products = [] } = Astro.props as {
 
   // Swipe soporte móvil
   let startX = 0;
-  const area = document.querySelector('.svc__inner') as HTMLElement | null;
+  const area = document.querySelector('.svc__inner');
   area?.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
   area?.addEventListener('touchend', (e) => {
     const dx = (e.changedTouches[0].clientX - startX);
@@ -204,53 +197,51 @@ const { products = [] } = Astro.props as {
   });
 
   // Modales
-  let lastFocused: Element | null = null;
-  let activeModal: HTMLElement | null = null;
-  function openModal(key: string) {
+  let lastFocused = null;
+  let activeModal = null;
+  function openModal(key) {
     const m = modals.get(key);
     if (!m) return;
     lastFocused = document.activeElement;
     m.classList.add('is-open');
     m.setAttribute('aria-hidden', 'false');
     body.style.overflow = 'hidden';
-    activeModal = m as HTMLElement;
+    activeModal = m;
 
     // Actualizar contenido según producto activo
     const p = svcProducts[index] || {};
     if (key === 'modelo') {
-      if (imgModelo) imgModelo.src = p.helpModelImg || DEFAULT_MODEL_IMG;
+      if (imgModelo) imgModelo.setAttribute('src', p.helpModelImg || DEFAULT_MODEL_IMG);
       if (textModelo) textModelo.textContent = p.helpModelText || DEFAULT_MODEL_TEXT;
     } else if (key === 'serie') {
-      if (imgSerie) imgSerie.src = p.helpSerieImg || DEFAULT_SERIE_IMG;
+      if (imgSerie) imgSerie.setAttribute('src', p.helpSerieImg || DEFAULT_SERIE_IMG);
       if (textSerie) textSerie.textContent = p.helpSerieText || DEFAULT_SERIE_TEXT;
     }
 
     // Focus primer elemento (botón cerrar)
-    const closeBtn = m.querySelector('.modal__close') as HTMLElement | null;
+    const closeBtn = m.querySelector('.modal__close');
     closeBtn?.focus();
   }
-  function closeModal(el?: Element | null) {
-    const m = el?.closest('.modal') || document.querySelector('.modal.is-open');
+  function closeModal(el) {
+    const m = (el && el.closest ? el.closest('.modal') : null) || document.querySelector('.modal.is-open');
     if (!m) return;
     m.classList.remove('is-open');
-    (m as HTMLElement).setAttribute('aria-hidden', 'true');
+    m.setAttribute('aria-hidden', 'true');
     body.style.overflow = '';
     activeModal = null;
     // Devolver foco
-    if (lastFocused instanceof HTMLElement) {
-      lastFocused.focus();
-    }
+    if (lastFocused && typeof lastFocused.focus === 'function') { lastFocused.focus(); }
   }
   openButtons.forEach((btn) => btn.addEventListener('click', () => {
-    const key = (btn as HTMLElement).dataset.open || '';
+    const key = (btn && btn.dataset ? btn.dataset.open : '') || '';
     openModal(key);
   }));
-  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn as Element)));
+  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn)));
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal(null);
     // Focus trap
     if (e.key === 'Tab' && activeModal) {
-      const focusables = activeModal.querySelectorAll<HTMLElement>(
+      const focusables = activeModal.querySelectorAll(
         'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
       );
       if (focusables.length) {
