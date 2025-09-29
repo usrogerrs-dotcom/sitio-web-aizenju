@@ -1,0 +1,72 @@
+---
+// Props opcionales para personalizar imágenes vía atributos si se desea en el futuro
+const {
+  bg = 'https://images.unsplash.com/photo-1529101091764-c3526daf38fe?q=80&w=1920&auto=format&fit=crop',
+  title = 'PC PARA ESTUDIANTES'
+} = Astro.props;
+---
+<section class="hero" aria-label="Sección principal">
+  <div class="hero__bg" style={`--bg:url(${JSON.stringify(bg)})`}></div>
+  <div class="hero__overlay"></div>
+  <div class="hero__content">
+    <h1 class="hero__title">{title}</h1>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Compensar header fijo */
+  :global(body) .hero { padding-top: 64px; }
+
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    background-image: var(--bg);
+    background-position: center;
+    background-size: cover;
+    transform: scale(1.1);
+    animation: revealZoom 1.6s ease forwards;
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(80% 60% at 50% 40%, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.8) 100%);
+  }
+
+  .hero__content {
+    position: relative;
+    height: calc(100vh - 64px);
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .hero__title {
+    font-size: clamp(2rem, 6vw, 5.5rem);
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.95;
+    background: linear-gradient(180deg, #fff 30%, #d1d5db 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 30px rgba(0,0,0,0.35);
+  }
+
+  @keyframes revealZoom {
+    0% { filter: blur(14px); transform: scale(1.2); opacity: 0.6; }
+    100% { filter: blur(0); transform: scale(1); opacity: 1; }
+  }
+</style>

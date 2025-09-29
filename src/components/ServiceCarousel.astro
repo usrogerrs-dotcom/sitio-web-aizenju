@@ -1,0 +1,273 @@
+---
+/**
+ * Componente de carrusel para Servicio Técnico
+ * Props:
+ * - products: Array<{
+ *     key: string;
+ *     title: string;
+ *     image: string;
+ *     issues: string[];
+ *     eta: string;
+ *     helpModelImg?: string;
+ *     helpSerieImg?: string;
+ *     helpModelText?: string;
+ *     helpSerieText?: string;
+ *   }>
+ */
+const { products = [] } = Astro.props as {
+  products: Array<{ key: string; title: string; image: string; issues: string[]; eta: string; helpModelImg?: string; helpSerieImg?: string; helpModelText?: string; helpSerieText?: string }>;
+};
+---
+<section class="svc" aria-label="Selector de producto para servicio técnico">
+  <button class="nav nav--left" aria-label="Anterior" data-dir="-1">‹</button>
+  <button class="nav nav--right" aria-label="Siguiente" data-dir="1">›</button>
+
+  <div class="svc__inner">
+    <!-- Imagen grande a la izquierda -->
+    <aside class="svc__left">
+      {products.length > 0 && (
+        <img class="svc__img" src={products[0].image} alt={products[0].title} loading="eager" />
+      )}
+    </aside>
+
+    <!-- Centro: título y enlaces -->
+    <section class="svc__center">
+      <header>
+        <h1 class="svc__title">{products.length > 0 ? products[0].title : 'Servicio Técnico'}</h1>
+        <nav class="svc__links">
+          <button type="button" class="linklike" data-open="modelo">¿Dónde está el modelo?</button>
+          <button type="button" class="linklike" data-open="serie">¿Dónde está el número de serie?</button>
+        </nav>
+      </header>
+      <div class="svc__desc">
+        <p>Selecciona las incidencias para tu equipo y revisa el tiempo estimado de reparación.</p>
+      </div>
+    </section>
+
+    <!-- Derecha: lista de averías y ETA -->
+    <aside class="svc__right">
+      <div class="card">
+        <h3>Posibles averías</h3>
+        <form class="issues" id="issues-form">
+          {products.length > 0 && products[0].issues.map((issue) => (
+            <label class="issue">
+              <input type="checkbox" name="issues" value={issue} />
+              <span>{issue}</span>
+            </label>
+          ))}
+        </form>
+        <div class="eta">
+          <small>Tiempo aproximado</small>
+          <strong class="eta__value">{products.length > 0 ? products[0].eta : '-'}</strong>
+        </div>
+        <button class="btn btn--primary" type="button">Solicitar diagnóstico</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- Modales: Modelo y Serie -->
+<div class="modal" id="modal-modelo" aria-hidden="true" role="dialog" aria-labelledby="modal-modelo-title">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__dialog" role="document">
+    <header class="modal__header">
+      <h3 id="modal-modelo-title">¿Dónde está el modelo?</h3>
+      <button class="modal__close" aria-label="Cerrar" data-close>×</button>
+    </header>
+    <div class="modal__body">
+      <img id="img-modelo" src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop" alt="Ejemplo de ubicación del modelo en la etiqueta del equipo" />
+      <p id="text-modelo">Busca una etiqueta en la parte inferior o posterior del equipo. En impresoras, suele estar al lado del cabezal o en la parte trasera.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-serie" aria-hidden="true" role="dialog" aria-labelledby="modal-serie-title">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__dialog" role="document">
+    <header class="modal__header">
+      <h3 id="modal-serie-title">¿Dónde está el número de serie?</h3>
+      <button class="modal__close" aria-label="Cerrar" data-close>×</button>
+    </header>
+    <div class="modal__body">
+      <img id="img-serie" src="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop" alt="Ejemplo de ubicación del número de serie en la etiqueta" />
+      <p id="text-serie">El número de serie suele estar en la misma etiqueta del modelo, identificado como "S/N", "Serial" o "SN".</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const products = JSON.parse({JSON.stringify(products)});
+  let index = 0;
+
+  const imgEl = document.querySelector('.svc__img') as HTMLImageElement | null;
+  const titleEl = document.querySelector('.svc__title') as HTMLElement | null;
+  const formEl = document.getElementById('issues-form') as HTMLFormElement | null;
+  const etaEl = document.querySelector('.eta__value') as HTMLElement | null;
+  const navButtons = document.querySelectorAll('.nav');
+  const body = document.body;
+  const openButtons = document.querySelectorAll('[data-open]');
+  const modalModelo = document.getElementById('modal-modelo');
+  const modalSerie = document.getElementById('modal-serie');
+  const imgModelo = document.getElementById('img-modelo') as HTMLImageElement | null;
+  const imgSerie = document.getElementById('img-serie') as HTMLImageElement | null;
+  const textModelo = document.getElementById('text-modelo') as HTMLElement | null;
+  const textSerie = document.getElementById('text-serie') as HTMLElement | null;
+
+  const DEFAULT_MODEL_IMG = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop';
+  const DEFAULT_SERIE_IMG = 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop';
+  const DEFAULT_MODEL_TEXT = 'Busca una etiqueta en la parte inferior o posterior del equipo. En impresoras, suele estar al lado del cabezal o en la parte trasera.';
+  const DEFAULT_SERIE_TEXT = 'El número de serie suele estar en la misma etiqueta del modelo, identificado como "S/N", "Serial" o "SN".';
+  const modals = new Map([
+    ['modelo', modalModelo],
+    ['serie', modalSerie],
+  ]);
+
+  function render(i: number) {
+    const p = products[i];
+    if (!p) return;
+    if (imgEl) { imgEl.src = p.image; imgEl.alt = p.title; }
+    if (titleEl) { titleEl.textContent = p.title; }
+    if (etaEl) { etaEl.textContent = p.eta; }
+    if (formEl) {
+      formEl.innerHTML = '';
+      for (const issue of p.issues) {
+        const label = document.createElement('label');
+        label.className = 'issue';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'issues';
+        input.value = issue;
+        const span = document.createElement('span');
+        span.textContent = issue;
+        label.appendChild(input);
+        label.appendChild(span);
+        formEl.appendChild(label);
+      }
+    }
+  }
+
+  function move(dir: number) {
+    index = (index + dir + products.length) % products.length;
+    render(index);
+  }
+
+  navButtons.forEach(btn => btn.addEventListener('click', () => {
+    const dir = Number((btn as HTMLElement).dataset.dir || '1');
+    move(dir);
+  }));
+
+  // Swipe soporte móvil
+  let startX = 0;
+  const area = document.querySelector('.svc__inner') as HTMLElement | null;
+  area?.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+  area?.addEventListener('touchend', (e) => {
+    const dx = (e.changedTouches[0].clientX - startX);
+    if (Math.abs(dx) > 50) move(dx < 0 ? 1 : -1);
+  });
+
+  // Modales
+  let lastFocused: Element | null = null;
+  let activeModal: HTMLElement | null = null;
+  function openModal(key: string) {
+    const m = modals.get(key);
+    if (!m) return;
+    lastFocused = document.activeElement;
+    m.classList.add('is-open');
+    m.setAttribute('aria-hidden', 'false');
+    body.style.overflow = 'hidden';
+    activeModal = m as HTMLElement;
+
+    // Actualizar contenido según producto activo
+    const p = products[index] || {};
+    if (key === 'modelo') {
+      if (imgModelo) imgModelo.src = p.helpModelImg || DEFAULT_MODEL_IMG;
+      if (textModelo) textModelo.textContent = p.helpModelText || DEFAULT_MODEL_TEXT;
+    } else if (key === 'serie') {
+      if (imgSerie) imgSerie.src = p.helpSerieImg || DEFAULT_SERIE_IMG;
+      if (textSerie) textSerie.textContent = p.helpSerieText || DEFAULT_SERIE_TEXT;
+    }
+
+    // Focus primer elemento (botón cerrar)
+    const closeBtn = m.querySelector('.modal__close') as HTMLElement | null;
+    closeBtn?.focus();
+  }
+  function closeModal(el?: Element | null) {
+    const m = el?.closest('.modal') || document.querySelector('.modal.is-open');
+    if (!m) return;
+    m.classList.remove('is-open');
+    (m as HTMLElement).setAttribute('aria-hidden', 'true');
+    body.style.overflow = '';
+    activeModal = null;
+    // Devolver foco
+    if (lastFocused instanceof HTMLElement) {
+      lastFocused.focus();
+    }
+  }
+  openButtons.forEach((btn) => btn.addEventListener('click', () => {
+    const key = (btn as HTMLElement).dataset.open || '';
+    openModal(key);
+  }));
+  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn as Element)));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal(null);
+    // Focus trap
+    if (e.key === 'Tab' && activeModal) {
+      const focusables = activeModal.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length) {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+        else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+      }
+    }
+  });
+</script>
+
+<style>
+  .svc { position: relative; padding: 120px 20px 80px; }
+  .svc__inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 24px; align-items: start; }
+
+  .svc__left { position: sticky; top: 100px; align-self: start; }
+  .svc__img { width: 100%; height: 520px; object-fit: cover; border-radius: 18px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
+
+  .svc__center header { margin-bottom: 10px; }
+  .svc__title { font-size: clamp(1.6rem, 3.5vw, 2.6rem); margin: 0 0 6px; }
+  .svc__links { display: flex; gap: 14px; }
+  .svc__links .linklike { background: none; border: none; padding: 0; color: #93c5fd; text-decoration: none; font-size: 0.95rem; opacity: 0.95; cursor: pointer; }
+  .svc__links .linklike:hover { text-decoration: underline; }
+  .svc__desc { color: #9ca3af; margin-top: 12px; }
+
+  .svc__right .card { background: #0f1115; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px; position: sticky; top: 100px; }
+  .issues { display: grid; gap: 10px; margin-top: 8px; margin-bottom: 16px; }
+  .issue { display: flex; align-items: center; gap: 10px; padding: 10px; background: #0b0c0e; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; }
+  .issue input { accent-color: #7c3aed; }
+  .eta { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: 10px; background: #0b0c0e; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 14px; }
+  .eta small { color: #9ca3af; }
+
+  .btn { cursor: pointer; border: none; border-radius: 10px; padding: 12px 16px; }
+  .btn--primary { background: #7c3aed; color: white; box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+
+  .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.35); color: #fff; cursor: pointer; display: grid; place-items: center; z-index: 10; }
+  .nav--left { left: 16px; }
+  .nav--right { right: 16px; }
+  .nav:hover { background: rgba(124,58,237,0.5); border-color: rgba(124,58,237,0.7); }
+
+  /* Modales */
+  .modal { position: fixed; inset: 0; display: none; z-index: 100; }
+  .modal.is-open { display: grid; place-items: center; }
+  .modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(2px); }
+  .modal__dialog { position: relative; width: min(92vw, 820px); background: #0f1115; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.55); overflow: hidden; }
+  .modal__header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .modal__close { background: none; border: 1px solid rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 8px; color: #e5e7eb; cursor: pointer; }
+  .modal__body { padding: 16px; color: #cbd5e1; }
+  .modal__body img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 10px; object-fit: cover; }
+
+  @media (max-width: 1024px) {
+    .svc__inner { grid-template-columns: 1fr; }
+    .svc__img { height: 320px; }
+    .svc__left, .svc__right .card { position: static; }
+    .nav { display: none; }
+  }
+</style>

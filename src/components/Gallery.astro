@@ -1,0 +1,58 @@
+---
+const { images = [] } = Astro.props;
+const items = images.length ? images : [
+  'https://images.unsplash.com/photo-1518112166137-85f9979a43a5?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1517059224940-d4af9eec41e5?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?q=80&w=1200&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop'
+];
+---
+<section class="gallery" aria-label="Galería de setups de PC">
+  <div class="wrap">
+    <div class="row">
+      {items.concat(items).map((src, i) => (
+        <figure class="card" aria-roledescription="slide">
+          <img src={src} alt={`Setup ${i+1}`} loading="lazy" />
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .gallery { padding: 80px 0; background: #0b0c0e; }
+  .wrap { max-width: 1200px; margin: 0 auto; overflow: hidden; }
+  .row {
+    display: flex;
+    gap: 18px;
+    animation: slide 24s linear infinite;
+    will-change: transform;
+  }
+  .card {
+    flex: 0 0 auto;
+    width: 320px;
+    height: 200px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0f1115;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.03);
+  }
+
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 720px) {
+    .gallery { padding: 60px 0; }
+    .card { width: 260px; height: 160px; }
+  }
+</style>

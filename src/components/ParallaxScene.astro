@@ -1,0 +1,93 @@
+---
+const {
+  bg = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1920&auto=format&fit=crop',
+  setup = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop',
+  person = 'https://images.unsplash.com/photo-1587614203976-365c74645e83?q=80&w=1200&auto=format&fit=crop'
+} = Astro.props;
+---
+<section class="parallax" aria-label="Transición con efecto de profundidad">
+  <div class="layer layer--bg" style={`--img:url(${JSON.stringify(bg)})`} data-speed="0.2"></div>
+  <div class="layer layer--mid" style={`--img:url(${JSON.stringify(setup)})`} data-speed="0.45"></div>
+  <div class="layer layer--front">
+    <img class="silhouette" src={person} alt="Estudiante en silla ergonómica" loading="lazy" />
+  </div>
+</section>
+
+<script>
+  const onScroll = () => {
+    const y = window.scrollY;
+    for (const el of document.querySelectorAll('.parallax .layer[data-speed]')) {
+      const speed = parseFloat(el.getAttribute('data-speed') || '0');
+      el.style.transform = `translate3d(0, ${y * speed * -0.25}px, 0)`;
+    }
+  };
+  let ticking = false;
+  const rafScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        onScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+  if (typeof window !== 'undefined') {
+    onScroll();
+    window.addEventListener('scroll', rafScroll, { passive: true });
+  }
+</script>
+
+<style>
+  .parallax {
+    position: relative;
+    height: 120vh;
+    overflow: hidden;
+    background: #0b0c0e;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .layer {
+    position: absolute;
+    inset: 0;
+    background-image: var(--img);
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+  }
+
+  .layer--bg { filter: brightness(0.9) saturate(0.9); }
+
+  .layer--mid {
+    mix-blend-mode: screen;
+    opacity: 0.9;
+    transform-origin: center;
+  }
+
+  .layer--front {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: end center;
+    pointer-events: none;
+  }
+
+  .silhouette {
+    width: min(40vw, 520px);
+    max-width: 90%;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.55)) saturate(0.9);
+    transform: translateY(10%);
+    animation: focusIn 1.2s ease 0.2s both;
+  }
+
+  @keyframes focusIn {
+    from { opacity: 0; transform: translateY(20%); }
+    to { opacity: 1; transform: translateY(10%); }
+  }
+
+  @media (max-width: 720px) {
+    .parallax { height: 100vh; }
+    .silhouette { width: min(60vw, 380px); }
+  }
+</style>

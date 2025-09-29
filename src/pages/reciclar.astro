@@ -1,0 +1,175 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout>
+  <section class="wizard">
+    <div class="wrap">
+      <header class="wizard__header">
+        <h1>Reciclar mi laptop</h1>
+        <p>Completa estos pasos para gestionar el reciclaje de tu equipo.</p>
+      </header>
+
+      <ol class="steps">
+        <li class="step is-active" data-step="1">
+          <h2>1) Características del equipo</h2>
+          <form class="form" id="form-1">
+            <div class="field">
+              <label>Marca</label>
+              <input name="marca" placeholder="Ej. Lenovo, HP, Dell" required />
+            </div>
+            <div class="field">
+              <label>Modelo (si lo conoces)</label>
+              <input name="modelo" placeholder="Ej. ThinkPad T480" />
+            </div>
+            <div class="field">
+              <label>Año aproximado</label>
+              <input name="anio" type="number" min="1995" max="{new Date().getFullYear()}" placeholder="Ej. 2019" />
+            </div>
+            <div class="field">
+              <label>Estado general</label>
+              <select name="estado" required>
+                <option value="">Selecciona…</option>
+                <option>Funciona</option>
+                <option>Enciende con fallas</option>
+                <option>No enciende</option>
+                <option>Solo partes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Descripción breve</label>
+              <textarea name="descripcion" rows="3" placeholder="Cuéntanos detalles relevantes (pantalla, batería, golpes, etc.)"></textarea>
+            </div>
+          </form>
+        </li>
+
+        <li class="step" data-step="2">
+          <h2>2) Datos de contacto</h2>
+          <form class="form" id="form-2">
+            <div class="field">
+              <label>Nombre y Apellido</label>
+              <input name="nombre" required />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input name="email" type="email" required />
+            </div>
+            <div class="field">
+              <label>Teléfono</label>
+              <input name="telefono" type="tel" />
+            </div>
+            <div class="field">
+              <label>Ciudad</label>
+              <input name="ciudad" />
+            </div>
+          </form>
+        </li>
+
+        <li class="step" data-step="3">
+          <h2>3) Entrega y confirmación</h2>
+          <form class="form" id="form-3">
+            <div class="field">
+              <label>Método de entrega</label>
+              <div class="options">
+                <label><input type="radio" name="entrega" value="punto" required /> Entregar en punto Aizenju</label>
+                <label><input type="radio" name="entrega" value="envio" required /> Solicitar envío a domicilio</label>
+              </div>
+            </div>
+            <div class="field" data-when="envio">
+              <label>Dirección (si envío a domicilio)</label>
+              <input name="direccion" placeholder="Calle, número, referencia" />
+            </div>
+            <div class="summary">
+              <h3>Resumen</h3>
+              <pre id="summary"></pre>
+            </div>
+            <div class="actions">
+              <button class="btn btn--primary" type="button" id="submitBtn">Enviar solicitud</button>
+            </div>
+          </form>
+        </li>
+      </ol>
+
+      <nav class="wizard__nav">
+        <button class="btn" id="prevBtn" disabled>Anterior</button>
+        <button class="btn btn--primary" id="nextBtn">Siguiente</button>
+      </nav>
+      <p class="note">Al enviar, aceptas nuestra política de reciclaje y tratamiento de datos.</p>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Estado del asistente
+  let step = 1;
+  const total = 3;
+  const steps = document.querySelectorAll('.step');
+  const prevBtn = document.getElementById('prevBtn')!;
+  const nextBtn = document.getElementById('nextBtn')!;
+  const submitBtn = document.getElementById('submitBtn');
+  const summaryEl = document.getElementById('summary');
+
+  function go(n) {
+    step = Math.min(total, Math.max(1, n));
+    steps.forEach(s => s.classList.toggle('is-active', Number(s.getAttribute('data-step')) === step));
+    prevBtn.toggleAttribute('disabled', step === 1);
+    nextBtn.style.display = step === total ? 'none' : '';
+    if (submitBtn) submitBtn.style.display = step === total ? '' : 'none';
+    // Mostrar/ocultar dirección si eligió envío
+    const method = (document.querySelector('input[name="entrega"]:checked') as HTMLInputElement)?.value;
+    const envioBlock = document.querySelector('[data-when="envio"]') as HTMLElement | null;
+    if (envioBlock) envioBlock.style.display = method === 'envio' ? '' : 'none';
+    if (step === total) buildSummary();
+  }
+
+  prevBtn.addEventListener('click', () => go(step - 1));
+  nextBtn.addEventListener('click', () => go(step + 1));
+  document.addEventListener('change', (e) => {
+    const t = e.target as HTMLInputElement;
+    if (t && t.name === 'entrega') go(step); // refrescar visibilidad
+  });
+
+  function buildSummary() {
+    const f1 = Object.fromEntries(new FormData(document.getElementById('form-1') as HTMLFormElement).entries());
+    const f2 = Object.fromEntries(new FormData(document.getElementById('form-2') as HTMLFormElement).entries());
+    const f3 = Object.fromEntries(new FormData(document.getElementById('form-3') as HTMLFormElement).entries());
+    const data = { ...f1, ...f2, ...f3 } as Record<string, string>;
+    summaryEl!.textContent = JSON.stringify(data, null, 2);
+  }
+
+  submitBtn?.addEventListener('click', async () => {
+    buildSummary();
+    // Aquí podríamos enviar a una API/Sheet/Email. De momento, mailto con resumen.
+    const body = encodeURIComponent(summaryEl!.textContent || '');
+    window.location.href = `mailto:contacto@aizenju.com?subject=Solicitud%20de%20reciclaje&body=${body}`;
+  });
+
+  go(1);
+</script>
+
+<style>
+  .wrap { max-width: 900px; margin: 0 auto; padding: 120px 20px 120px; }
+  .wizard__header { text-align: center; margin-bottom: 18px; }
+  .wizard__header h1 { margin: 0 0 6px; font-size: clamp(1.8rem, 5vw, 2.6rem); }
+  .wizard__header p { color: #9ca3af; }
+
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step { display: none; }
+  .step.is-active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from { opacity: .6; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .form { display: grid; gap: 12px; background: #0f1115; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px; }
+  .field { display: grid; gap: 6px; }
+  label { color: #e5e7eb; font-size: .95rem; }
+  input, select, textarea { background: #0b0c0e; border: 1px solid rgba(255,255,255,0.08); color: #e5e7eb; border-radius: 10px; padding: 10px; }
+  textarea { resize: vertical; }
+  .options { display: grid; gap: 6px; }
+  .summary { margin-top: 10px; }
+  .summary pre { background: #0b0c0e; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; white-space: pre-wrap; color: #cbd5e1; }
+
+  .wizard__nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; }
+  .btn { cursor: pointer; border: 1px solid rgba(255,255,255,0.12); background: #0b0c0e; color: #e5e7eb; padding: 10px 14px; border-radius: 10px; }
+  .btn--primary { background: #7c3aed; border-color: transparent; box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+  .note { color: #9ca3af; text-align: center; margin-top: 8px; }
+
+  @media (max-width: 720px) { .wrap { padding-top: 100px; } }
+</style>

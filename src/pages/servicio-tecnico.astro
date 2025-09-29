@@ -1,0 +1,95 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ServiceCarousel from '../components/ServiceCarousel.astro';
+
+const products = [
+  {
+    key: 'laptop',
+    title: 'LAPTOP - COMPUTADORA PORTÁTIL',
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1600&auto=format&fit=crop',
+    issues: ['No enciende', 'Pantalla rota', 'Lento / sobrecalentamiento', 'Batería no carga', 'Teclado fallando'],
+    eta: '60 - 72 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1464278533981-50106e6176a0?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En laptops, el modelo suele estar en una etiqueta en la base o bajo la batería.',
+    helpSerieText: 'El número de serie puede estar en la misma etiqueta, identificado como S/N.'
+  },
+  {
+    key: 'pc',
+    title: 'PC - COMPUTADORA DE ESCRITORIO',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop',
+    issues: ['No da video', 'No bootea', 'Ruido / ventiladores', 'Thermal / pasta seca', 'Limpieza y cableado'],
+    eta: '12 - 48 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1551033406-611cf9a28f67?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En desktops, el modelo puede estar en la etiqueta lateral/posterior del case.',
+    helpSerieText: 'El S/N suele ubicarse en la parte posterior junto a los puertos.'
+  },
+  {
+    key: 'impresora',
+    title: 'IMPRESORA',
+    image: 'https://images.unsplash.com/photo-1580852302912-8c2d48e9d68b?q=80&w=1600&auto=format&fit=crop',
+    issues: ['Atasco de papel', 'No imprime', 'Calidad baja', 'Wi‑Fi / red', 'Drivers'],
+    eta: '24 - 72 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1518454901929-9ee5b6bd0f07?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1585157604283-10f4224ad67c?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En impresoras, busca el modelo en la parte frontal o etiqueta trasera.',
+    helpSerieText: 'El número de serie está en la etiqueta posterior o interna del compartimento.'
+  },
+  {
+    key: 'play',
+    title: 'PLAYSTATION',
+    image: 'https://images.unsplash.com/photo-1603483209288-42c8efb09c8b?q=80&w=1600&auto=format&fit=crop',
+    issues: ['No enciende', 'HDMI dañado', 'Sobrecalentamiento', 'Almacenamiento', 'Limpieza interna'],
+    eta: '24 - 72 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1621259182978-263f9b7d7347?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1520975954732-35dd22299626?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En consolas, el modelo suele estar en la base o parte trasera.',
+    helpSerieText: 'El número de serie está en la etiqueta inferior o trasera, precedido por S/N.'
+  },
+  {
+    key: 'tablet',
+    title: 'TABLET',
+    image: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?q=80&w=1600&auto=format&fit=crop',
+    issues: ['Pantalla rota', 'No carga', 'No enciende', 'Batería agotada', 'Lento'],
+    eta: '24 - 72 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1457305237443-44c3d5a30b89?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En tablets, el modelo puede estar en Ajustes > Información del dispositivo o en la parte trasera.',
+    helpSerieText: 'El número de serie en Ajustes > Información o en la caja/etiqueta posterior.'
+  },
+  {
+    key: 'celular',
+    title: 'CELULAR',
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=1600&auto=format&fit=crop',
+    issues: ['Pantalla rota', 'Cambio de batería', 'Cámara / audio', 'Conector de carga', 'No recibe señal'],
+    eta: '10 min - 24 horas',
+    helpModelImg: 'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?q=80&w=1200&auto=format&fit=crop',
+    helpSerieImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1200&auto=format&fit=crop',
+    helpModelText: 'En celulares, Ajustes > Acerca del teléfono > Modelo.',
+    helpSerieText: 'El IMEI/serie en Ajustes, marcando *#06#, o en la bandeja SIM.'
+  }
+];
+---
+<Layout>
+  <section class="hero-svc">
+    <div class="content">
+      <h1>Servicio Técnico</h1>
+      <p>Diagnóstico, optimización y reparación para que tus equipos rindan al máximo.</p>
+    </div>
+  </section>
+
+  <ServiceCarousel products={products} />
+</Layout>
+
+<style>
+  .hero-svc {
+    padding: 140px 20px 20px;
+    background: radial-gradient(60% 60% at 50% 20%, rgba(124,58,237,0.2), transparent 70%), #0a0a0a;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .hero-svc .content { max-width: 900px; margin: 0 auto; }
+  .hero-svc h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0 0 8px; }
+  .hero-svc p { color: #9ca3af; font-size: 1.05rem; margin: 0; }
+</style>

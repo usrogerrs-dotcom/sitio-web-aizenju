@@ -1,11 +1,31 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Hero from '../components/Hero.astro';
+import ParallaxScene from '../components/ParallaxScene.astro';
+import Gallery from '../components/Gallery.astro';
 ---
 
 <Layout>
-	<Welcome />
+  <Hero title="PC PARA ESTUDIANTES" />
+
+  <ParallaxScene />
+
+  <section class="content" aria-label="Contenido principal">
+    <div class="wrap">
+      <h2>Herramientas tecnológicas personalizadas para romper tus límites.</h2>
+      <p>
+        Todos no aprendemos de la misma manera, por eso seleccionamos y personalizamos herramientas
+        para que tu aprendizaje sea único y exclusivo.
+      </p>
+    </div>
+  </section>
+
+  <Gallery />
 </Layout>
+
+<style>
+  .content { background: #0a0a0a; padding: 80px 20px 0; }
+  .wrap { max-width: 1000px; margin: 0 auto; text-align: center; }
+  h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0 0 12px; }
+  p { margin: 0; color: #9ca3af; font-size: 1.1rem; }
+</style>
