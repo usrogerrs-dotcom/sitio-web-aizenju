@@ -108,7 +108,7 @@ import Layout from '../layouts/Layout.astro';
   const submitBtn = document.getElementById('submitBtn');
   const summaryEl = document.getElementById('summary');
 
-  function go(n) {
+  function go(n: number) {
     step = Math.min(total, Math.max(1, n));
     steps.forEach(s => s.classList.toggle('is-active', Number(s.getAttribute('data-step')) === step));
     prevBtn.toggleAttribute('disabled', step === 1);

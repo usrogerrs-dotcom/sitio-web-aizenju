@@ -1,17 +1,243 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import ParallaxScene from '../components/ParallaxScene.astro';
+import Gallery from '../components/Gallery.astro';
+// IDs públicos de precios (Stripe) para cada producto
+const PRICE_ESET = import.meta.env.PUBLIC_PRICE_ID_ESET as string | undefined;
+const PRICE_M365 = import.meta.env.PUBLIC_PRICE_ID_M365 as string | undefined;
+const PRICE_WIN11 = import.meta.env.PUBLIC_PRICE_ID_WIN11 as string | undefined;
+// Precios locales (PEN) si no hay priceId en Stripe
+const LOCAL_PEN = 'pen';
+const ESET_ANTES_CENTS = 12189; // S/ 121.89
+const ESET_AHORA_CENTS = 3656;  // S/ 36.56 (70% dcto aprox)
+const M365_ANTES_CENTS = 30899; // S/ 308.99
+const M365_AHORA_CENTS = 6180;  // S/ 61.80 (80% dcto)
+const WIN11_ANTES_CENTS = 99999; // S/ 999.99
+const WIN11_AHORA_CENTS = 9999;  // S/ 99.99 (90% dcto)
 ---
+
 <Layout>
-  <section class="hero-sub">
-    <h1>Setups de PC</h1>
-    <p>Inspiración y configuraciones personalizadas para cada estilo de aprendizaje.</p>
+  <!-- Hero principal orientado a Setups -->
+  <Hero title="Setups de PC" bg="none" />
+
+  <!-- Efecto parallax/intermedio visual con tus imágenes y texto integrado -->
+  <ParallaxScene
+    bg="/tu-fondo.jpg"
+    setup="/tu-setup.webp"
+    person="/tu-silueta.png"
+    heading="Setups personalizados para potenciar tu forma de aprender y crear."
+    subtext="Unimos lo mejor de nuestros equipos y accesorios en configuraciones pensadas para diferentes estilos. Inspírate con nuestra galería y arma tu espacio ideal."
+  />
+
+  <!-- Galería reutilizada de Home -->
+  <Gallery />
+
+  <!-- Productos destacados: Licencias originales -->
+  <section class="featured" aria-label="Productos destacados: licencias originales">
+    <div class="wrap">
+      <h2 class="featured__title">Licencias originales recomendadas</h2>
+      <p class="featured__subtitle">Protege y potencia tu PC con software 100% legítimo.</p>
+
+      <div class="cards">
+        <article class="card">
+          <header class="card__header">
+            <img class="card__logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0a/ESET_Logo.svg" alt="ESET NOD32" loading="lazy" />
+            <h3 class="card__title">ESET NOD32 Antivirus</h3>
+          </header>
+          <p class="card__text">Seguridad ligera y efectiva contra malware y phishing. Ideal para equipos de estudio y trabajo.</p>
+          <div class="card__meta" data-price-id={PRICE_ESET || ''} data-local-amount={PRICE_ESET ? '' : String(ESET_AHORA_CENTS)} data-local-currency={PRICE_ESET ? '' : LOCAL_PEN} data-local-interval={PRICE_ESET ? '' : 'year'}>
+            <span class="badge" data-badge>{PRICE_ESET ? '' : 'Suscripción'}</span>
+            <strong class="price" data-price>
+              {PRICE_ESET ? '—' : `${new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(ESET_AHORA_CENTS/100)} / año`}
+            </strong>
+            {!PRICE_ESET && (
+              <span class="was">
+                <s>{new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(ESET_ANTES_CENTS/100)}</s>
+                <span class="tag tag--discount">-70%</span>
+              </span>
+            )}
+          </div>
+          <ul class="card__bullets">
+            <li>Protección en tiempo real</li>
+            <li>Bajo consumo de recursos</li>
+            <li>Licencia original</li>
+          </ul>
+          <button class="btn btn--primary buy-btn" data-product="ESET NOD32 Antivirus" data-price-id={PRICE_ESET || ''} data-amount={!PRICE_ESET ? String(ESET_AHORA_CENTS) : ''} data-currency={!PRICE_ESET ? LOCAL_PEN : ''} data-interval={!PRICE_ESET ? 'year' : ''} disabled={!PRICE_ESET && !ESET_AHORA_CENTS} aria-disabled={!PRICE_ESET && !ESET_AHORA_CENTS}>
+            {PRICE_ESET ? 'Comprar licencia' : `Comprar — ${new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(ESET_AHORA_CENTS/100)} / año`}
+          </button>
+        </article>
+
+        <article class="card">
+          <header class="card__header">
+            <img class="card__logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft 365" loading="lazy" />
+            <h3 class="card__title">Microsoft 365 (Office 365)</h3>
+          </header>
+          <p class="card__text">Word, Excel, PowerPoint y más, con almacenamiento en la nube y apps siempre actualizadas.</p>
+          <div class="card__meta" data-price-id={PRICE_M365 || ''} data-local-amount={PRICE_M365 ? '' : String(M365_AHORA_CENTS)} data-local-currency={PRICE_M365 ? '' : LOCAL_PEN} data-local-interval={PRICE_M365 ? '' : 'year'}>
+            <span class="badge" data-badge>{PRICE_M365 ? '' : 'Suscripción'}</span>
+            <strong class="price" data-price>
+              {PRICE_M365 ? '—' : `${new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(M365_AHORA_CENTS/100)} / año`}
+            </strong>
+            {!PRICE_M365 && (
+              <span class="was">
+                <s>{new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(M365_ANTES_CENTS/100)}</s>
+                <span class="tag tag--discount tag--m365">-80%</span>
+              </span>
+            )}
+          </div>
+          <ul class="card__bullets">
+            <li>Apps de Office premium</li>
+            <li>OneDrive incluido</li>
+            <li>Licencia original</li>
+          </ul>
+          <button class="btn btn--primary buy-btn" data-product="Microsoft 365" data-price-id={PRICE_M365 || ''} data-amount={!PRICE_M365 ? String(M365_AHORA_CENTS) : ''} data-currency={!PRICE_M365 ? LOCAL_PEN : ''} data-interval={!PRICE_M365 ? 'year' : ''} disabled={!PRICE_M365 && !M365_AHORA_CENTS} aria-disabled={!PRICE_M365 && !M365_AHORA_CENTS}>
+            {PRICE_M365 ? 'Comprar licencia' : `Comprar — ${new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(M365_AHORA_CENTS/100)} / año`}
+          </button>
+        </article>
+
+        <article class="card">
+          <header class="card__header">
+            <img class="card__logo" src="https://upload.wikimedia.org/wikipedia/commons/4/48/Windows_logo_-_2012.svg" alt="Windows 11" loading="lazy" />
+            <h3 class="card__title">Windows 11</h3>
+          </header>
+          <p class="card__text">La versión más moderna de Windows, con rendimiento optimizado y mejor integración para estudio.</p>
+          <div class="card__meta" data-price-id={PRICE_WIN11 || ''} data-local-amount={PRICE_WIN11 ? '' : String(WIN11_AHORA_CENTS)} data-local-currency={PRICE_WIN11 ? '' : LOCAL_PEN}>
+            <span class="badge" data-badge>{PRICE_WIN11 ? '' : 'Pago único'}</span>
+            <strong class="price" data-price>
+              {PRICE_WIN11 ? '—' : new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(WIN11_AHORA_CENTS/100)}
+            </strong>
+            {!PRICE_WIN11 && (
+              <span class="was">
+                <s>{new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(WIN11_ANTES_CENTS/100)}</s>
+                <span class="tag tag--discount">-90%</span>
+              </span>
+            )}
+          </div>
+          <ul class="card__bullets">
+            <li>Actualizaciones oficiales</li>
+            <li>Mejoras de seguridad</li>
+            <li>Licencia original</li>
+          </ul>
+          <button class="btn btn--primary buy-btn" data-product="Windows 11" data-price-id={PRICE_WIN11 || ''} data-amount={!PRICE_WIN11 ? String(WIN11_AHORA_CENTS) : ''} data-currency={!PRICE_WIN11 ? LOCAL_PEN : ''} disabled={!PRICE_WIN11 && !WIN11_AHORA_CENTS} aria-disabled={!PRICE_WIN11 && !WIN11_AHORA_CENTS}>
+            {PRICE_WIN11 ? 'Comprar licencia' : `Comprar — ${new Intl.NumberFormat('es-PE', { style: 'currency', currency: LOCAL_PEN }).format(WIN11_AHORA_CENTS/100)}`}
+          </button>
+        </article>
+      </div>
+    </div>
   </section>
-  <section class="placeholder">
-    <p>Próximamente: catálogo de setups por color, temática o ídolo.</p>
-  </section>
+
 </Layout>
 
 <style>
-  .hero-sub { padding: 140px 20px 40px; text-align: center; }
-  .placeholder { padding: 40px 20px 120px; text-align: center; color: #9ca3af; }
+  .content { background: #0a0a0a; padding: 80px 20px 0; }
+  .wrap { max-width: 1000px; margin: 0 auto; text-align: center; }
+  h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0 0 12px; }
+  p { margin: 0; color: #9ca3af; font-size: 1.1rem; }
+
+  .featured { padding: 80px 20px 120px; background: #0a0a0a; }
+  .featured__title { margin: 0 0 8px; }
+  .featured__subtitle { margin: 0 0 24px; color: #9ca3af; }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .card {
+    background: #0f1115;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: left;
+  }
+  .card__header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .card__logo { height: 24px; width: auto; filter: saturate(0.9) brightness(1); }
+  .card__title { font-size: 1.1rem; margin: 0; }
+  .card__text { color: #cbd5e1; margin: 6px 0 10px; font-size: 0.98rem; }
+  .card__bullets { margin: 0; padding-left: 18px; color: #9ca3af; }
+  .card__bullets li { margin: 4px 0; }
+  .btn[disabled], .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.3); }
+  .tag { display: inline-block; font-size: 0.7rem; padding: 2px 6px; border-radius: 8px; margin-left: 6px; border: 1px solid rgba(255,255,255,0.15); }
+  .tag--discount { background: rgba(220,38,38,0.18); color: #fecaca; border-color: rgba(220,38,38,0.35); }
+  .tag--m365 { background: rgba(34,197,94,0.18); color: #bbf7d0; border-color: rgba(34,197,94,0.35); }
+  .card__meta { display: flex; align-items: center; gap: 8px; margin: 8px 0 6px; }
+  .badge { display: inline-block; font-size: 0.75rem; padding: 4px 8px; border-radius: 999px; background: rgba(124,58,237,0.18); color: #e9d5ff; border: 1px solid rgba(124,58,237,0.35); }
+  .price { font-weight: 700; color: #ffffff; }
+
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: 1fr; }
+  }
 </style>
+
+<script>
+  // Manejar compras por licencia individual con Stripe Checkout
+  document.addEventListener('click', async (e) => {
+    const target = e.target;
+    const btn = target && target.closest ? target.closest('.buy-btn') : null;
+    if (!btn) return;
+    const priceId = (btn.dataset.priceId || '').trim();
+    const productName = btn.dataset.product || 'Licencia';
+    if (!priceId) {
+      alert('Este producto aún no está disponible para compra.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, productName })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data && data.url) {
+        window.location.href = data.url;
+      } else {
+        alert((data && data.error) || 'No se pudo iniciar el pago.');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : '');
+      alert(msg || 'Error iniciando el pago.');
+    }
+  });
+  
+  // Estilo de botón reutilizable
+  const style = document.createElement('style');
+  style.textContent = `.btn{cursor:pointer;border:none;border-radius:10px;padding:12px 16px}.btn--primary{background:#7c3aed;color:#fff;box-shadow:0 8px 24px rgba(124,58,237,.35)}`;
+  document.head.appendChild(style);
+
+  // Poblar precios desde el backend
+  (async () => {
+    const metas = Array.from(document.querySelectorAll('.card__meta'));
+    const ids = Array.from(new Set(
+      metas.map((m) => (m.dataset.priceId || '').trim()).filter(Boolean)
+    ));
+    if (!ids.length) return;
+    try {
+      const url = `/api/prices?ids=${encodeURIComponent(ids.join(','))}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      const dict = (json && json.prices) || {};
+      const fmt = (amount, currency) => {
+        if (amount == null || !currency) return '—';
+        try { return new Intl.NumberFormat('es-PE', { style: 'currency', currency }).format(amount / 100); } catch { return `${amount/100} ${String(currency).toUpperCase()}`; }
+      };
+      const intervalEs = { day: 'día', week: 'semana', month: 'mes', year: 'año' };
+      metas.forEach((m) => {
+        const id = (m.dataset.priceId || '').trim();
+        const data = dict[id];
+        const priceEl = m.querySelector('[data-price]');
+        const badgeEl = m.querySelector('[data-badge]');
+        const card = m.closest('.card');
+        const btn = card && card.querySelector ? card.querySelector('.buy-btn') : null;
+        if (!data) return;
+        const isRecurring = data.type === 'recurring' && data.interval;
+        const interval = data.interval ? (intervalEs[data.interval] || data.interval) : undefined;
+        const amountTxt = fmt(data.unit_amount ?? null, data.currency ?? null);
+        if (priceEl) priceEl.textContent = isRecurring && interval ? `${amountTxt} / ${interval}` : amountTxt;
+        if (badgeEl) badgeEl.textContent = isRecurring ? 'Suscripción' : 'Pago único';
+        if (btn) btn.textContent = `Comprar — ${(priceEl && priceEl.textContent) || amountTxt}`;
+      });
+    } catch (err) {
+      // silenciar en UI; mantenemos placeholders
+    }
+  })();
+</script>

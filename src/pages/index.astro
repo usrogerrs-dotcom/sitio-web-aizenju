@@ -1,31 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro';
-import ParallaxScene from '../components/ParallaxScene.astro';
-import Gallery from '../components/Gallery.astro';
 ---
 
 <Layout>
-  <Hero title="PC PARA ESTUDIANTES" />
-
-  <ParallaxScene />
-
-  <section class="content" aria-label="Contenido principal">
+  <meta http-equiv="refresh" content="0; url=/setups" />
+  <script>
+    if (typeof window !== 'undefined') window.location.replace('/setups');
+  </script>
+  <section class="redir" aria-label="Redirección">
     <div class="wrap">
-      <h2>Herramientas tecnológicas personalizadas para romper tus límites.</h2>
-      <p>
-        Todos no aprendemos de la misma manera, por eso seleccionamos y personalizamos herramientas
-        para que tu aprendizaje sea único y exclusivo.
-      </p>
+      <h1>Redirigiendo a Setups de PC…</h1>
+      <p>Si no eres redirigido automáticamente, <a href="/setups">haz clic aquí</a>.</p>
     </div>
   </section>
-
-  <Gallery />
 </Layout>
 
 <style>
-  .content { background: #0a0a0a; padding: 80px 20px 0; }
-  .wrap { max-width: 1000px; margin: 0 auto; text-align: center; }
-  h2 { font-size: clamp(1.6rem, 4vw, 2.6rem); margin: 0 0 12px; }
-  p { margin: 0; color: #9ca3af; font-size: 1.1rem; }
+  .redir { padding: 140px 20px; text-align: center; }
+  .wrap { max-width: 900px; margin: 0 auto; }
 </style>

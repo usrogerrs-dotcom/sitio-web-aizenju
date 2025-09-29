@@ -95,8 +95,22 @@ const { products = [] } = Astro.props as {
   </div>
 </div>
 
+<!-- Datos serializados para el cliente -->
+<script id="svc-products" type="application/json">{JSON.stringify(products)}</script>
+
 <script>
-  const products = JSON.parse({JSON.stringify(products)});
+  // Leer datos serializados desde el DOM para evitar problemas de interpolación
+  const svcProducts = JSON.parse(document.getElementById('svc-products')!.textContent || '[]') as Array<{
+    key: string;
+    title: string;
+    image: string;
+    issues: string[];
+    eta: string;
+    helpModelImg?: string;
+    helpSerieImg?: string;
+    helpModelText?: string;
+    helpSerieText?: string;
+  }>;
   let index = 0;
 
   const imgEl = document.querySelector('.svc__img') as HTMLImageElement | null;
@@ -123,7 +137,7 @@ const { products = [] } = Astro.props as {
   ]);
 
   function render(i: number) {
-    const p = products[i];
+    const p = svcProducts[i];
     if (!p) return;
     if (imgEl) { imgEl.src = p.image; imgEl.alt = p.title; }
     if (titleEl) { titleEl.textContent = p.title; }
@@ -147,7 +161,7 @@ const { products = [] } = Astro.props as {
   }
 
   function move(dir: number) {
-    index = (index + dir + products.length) % products.length;
+    index = (index + dir + svcProducts.length) % svcProducts.length;
     render(index);
   }
 
@@ -155,6 +169,30 @@ const { products = [] } = Astro.props as {
     const dir = Number((btn as HTMLElement).dataset.dir || '1');
     move(dir);
   }));
+
+  // Iniciar pago con Stripe Checkout
+  const payBtn = document.querySelector('.svc__right .btn--primary') as HTMLButtonElement | null;
+  payBtn?.addEventListener('click', async () => {
+    try {
+      const p = svcProducts[index];
+      if (!p) return;
+      const checked = Array.from(document.querySelectorAll('input[name="issues"]:checked')) as HTMLInputElement[];
+      const issues = checked.map(i => i.value);
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productKey: p.key, productName: p.title, issues })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.url) {
+        window.location.href = data.url as string;
+      } else {
+        alert(data?.error || 'No se pudo iniciar el pago.');
+      }
+    } catch (err: any) {
+      alert(err?.message || 'Error iniciando el pago.');
+    }
+  });
 
   // Swipe soporte móvil
   let startX = 0;
@@ -178,7 +216,7 @@ const { products = [] } = Astro.props as {
     activeModal = m as HTMLElement;
 
     // Actualizar contenido según producto activo
-    const p = products[index] || {};
+    const p = svcProducts[index] || {};
     if (key === 'modelo') {
       if (imgModelo) imgModelo.src = p.helpModelImg || DEFAULT_MODEL_IMG;
       if (textModelo) textModelo.textContent = p.helpModelText || DEFAULT_MODEL_TEXT;

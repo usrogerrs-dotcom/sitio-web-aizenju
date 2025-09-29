@@ -14,7 +14,13 @@
     <body>
         <header class="site-header">
             <nav class="nav">
-                <a class="logo" href="/">Aizenju</a>
+                <a class="logo" href="/" aria-label="Inicio Aizenju">
+                    <!-- Logo inline para controlar color con CSS (usa currentColor) -->
+                    <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aizenju">
+                        <path fill="currentColor" d="M 50 10 L 10 90 L 30 90 L 50 45 L 70 90 L 90 90 Z" />
+                        <path fill="currentColor" d="M 30 90 C 35 98, 65 98, 70 90 L 70 90 L 30 90 Z" />
+                    </svg>
+                </a>
                 <ul class="menu">
                     <li><a href="/setups">Setups de PC</a></li>
                     <li><a href="/servicio-tecnico">Servicio Técnico</a></li>
@@ -62,22 +68,22 @@
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
 
+        /* Estado scrolled: header más sólido y color de marca en el logo */
+        .site-header.scrolled { background: rgba(0,0,0,0.65); }
+        .site-header.scrolled .logo { color: var(--accent); }
+
         .nav {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 20px;
+            padding: 10px 20px;
         }
 
-        .logo {
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-decoration: none;
-            color: var(--text);
-            font-size: 1.05rem;
-        }
+        .logo { display: flex; align-items: center; text-decoration: none; color: #e5e7eb; }
+        .logo-icon { height: 20px; width: auto; display: block; }
+        .logo:hover { color: #ffffff; }
 
         .menu {
             display: flex;
@@ -107,7 +113,20 @@
 
         @media (max-width: 720px) {
             .menu { gap: 14px; }
-            .logo { font-size: 1rem; }
+            .logo-icon { height: 16px; }
         }
     </style>
+    <script>
+        // Añadir clase 'scrolled' al header cuando hay desplazamiento
+        (function(){
+            const header = document.querySelector('.site-header');
+            if (!header) return;
+            const onScroll = () => {
+                if (window.scrollY > 8) header.classList.add('scrolled');
+                else header.classList.remove('scrolled');
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+    </script>
 </html>

@@ -1,58 +1,156 @@
 ---
 const { images = [] } = Astro.props;
 const items = images.length ? images : [
-  'https://images.unsplash.com/photo-1518112166137-85f9979a43a5?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1517059224940-d4af9eec41e5?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?q=80&w=1200&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?q=80&w=1200&auto=format&fit=crop'
+  '/setup-5.webp',
+  '/setup-3.webp',
+  '/setup-4.webp',
+  '/setup-2.webp',
+  '/setup-1.webp',
 ];
 ---
 <section class="gallery" aria-label="Galería de setups de PC">
   <div class="wrap">
-    <div class="row">
-      {items.concat(items).map((src, i) => (
-        <figure class="card" aria-roledescription="slide">
-          <img src={src} alt={`Setup ${i+1}`} loading="lazy" />
+    <div class="mosaic" role="list">
+      {items.slice(0,5).map((src: string, i: number) => (
+        <figure class={`tile tile--${i+1}`} role="listitem" data-i={i} aria-roledescription="card" data-depth={(() => {
+          // Profundidad para parallax por tile
+          const depths = [0.28, 0.18, 0.2, 0.12, 0.16];
+          return String(depths[i] ?? 0.15);
+        })()}>
+          <div class="tile__inner">
+            <img src={src} alt={`Setup ${i+1}`} loading="lazy" />
+          </div>
         </figure>
       ))}
     </div>
   </div>
 </section>
 
+<script>
+  // Reveal al entrar en viewport y efecto tilt al hover
+  const section = document.currentScript && document.currentScript.closest ? document.currentScript.closest('.gallery') : document.querySelector('.gallery');
+  const tiles = Array.from(document.querySelectorAll('.tile'));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) (e.target as HTMLElement).classList.add('is-in');
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.2 });
+  tiles.forEach((t, idx) => { t.style.setProperty('--delay', `${idx * 90}ms`); io.observe(t); });
+
+  const handleMove = (ev) => {
+    const el = ev.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = (ev.clientX - rect.left) / rect.width - 0.5;
+    const y = (ev.clientY - rect.top) / rect.height - 0.5;
+    el.style.setProperty('--rx', `${-(y * 6)}deg`);
+    el.style.setProperty('--ry', `${x * 8}deg`);
+    el.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(2)}%`);
+    el.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(2)}%`);
+  };
+  const resetMove = (ev) => {
+    const el = ev.currentTarget;
+    el.style.setProperty('--rx', `0deg`);
+    el.style.setProperty('--ry', `0deg`);
+  };
+  tiles.forEach((t) => {
+    t.addEventListener('mousemove', handleMove);
+    t.addEventListener('mouseleave', resetMove);
+  });
+
+  // Parallax on scroll por tile usando data-depth
+  let ticking = false;
+  const onScroll = () => {
+    if (!section) return;
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const rect = section.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      // progreso de scroll dentro de la sección (-1 a 1 aprox)
+      const progress = Math.max(-1, Math.min(1, (viewportH - rect.top) / (viewportH + rect.height)));
+      tiles.forEach((t) => {
+        const d = parseFloat(t.dataset.depth || '0.15');
+        const ty = (progress * 40) * d; // 40px máx por profundidad
+        t.style.setProperty('--ty', `${ty.toFixed(2)}px`);
+      });
+      ticking = false;
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+</script>
+
 <style>
-  .gallery { padding: 80px 0; background: #0b0c0e; }
-  .wrap { max-width: 1200px; margin: 0 auto; overflow: hidden; }
-  .row {
-    display: flex;
-    gap: 18px;
-    animation: slide 24s linear infinite;
-    will-change: transform;
+  .gallery { padding: 90px 0; background: #0b0c0e; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+  .mosaic { 
+    display: grid; 
+    grid-template-columns: repeat(12, 1fr); 
+    grid-auto-rows: 90px; 
+    gap: 14px; 
   }
-  .card {
-    flex: 0 0 auto;
-    width: 320px;
-    height: 200px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #0f1115;
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  .tile { 
+    --rx: 0deg; --ry: 0deg; --scale: 1; --ty: 0px;
+    transform: translateY(var(--ty)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) scale(var(--scale));
+    transform-style: preserve-3d;
+    transition: transform 220ms cubic-bezier(.2,.7,.2,1), box-shadow 220ms ease, filter 220ms ease, opacity 300ms ease, translate 300ms ease;
+    opacity: 0; 
+    translate: 0 8px; 
+    filter: saturate(0.85) brightness(0.95);
   }
-  .card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scale(1.03);
+  .tile.is-in { opacity: 1; translate: 0; transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease; }
+  .tile:hover { --scale: 1.02; filter: saturate(1) brightness(1); box-shadow: 0 18px 50px rgba(0,0,0,0.45); }
+  .tile__inner { 
+    height: 100%; border-radius: 16px; overflow: hidden; 
+    background: #0f1115; border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  /* Shine sweep periódico */
+  .tile__inner::before {
+    content: ""; position: absolute; inset: -20% -120% -20% -120%;
+    background: linear-gradient(60deg, transparent 45%, rgba(255,255,255,0.22) 50%, transparent 55%);
+    transform: translateX(-60%);
+    animation: shine 6.5s ease-in-out calc(var(--delay, 0ms) + 800ms) infinite;
+    mix-blend-mode: screen; opacity: .25; pointer-events: none;
+  }
+  .tile__inner::after { 
+    content: ""; position: absolute; inset: 0; pointer-events: none; 
+    background: radial-gradient(1200px 600px at var(--mx,50%) var(--my,50%), rgba(124,58,237,0.12), transparent 50%);
+    opacity: 0; transition: opacity 180ms ease; 
+  }
+  .tile:hover .tile__inner::after { opacity: 1; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; transform: translateZ(0); }
+
+  /* Mosaico 5 piezas (desktop) */
+  .tile--1 { grid-column: 1 / span 7; grid-row: span 4; }
+  .tile--2 { grid-column: 8 / span 5; grid-row: span 2; }
+  .tile--3 { grid-column: 8 / span 5; grid-row: span 2; }
+  .tile--4 { grid-column: 1 / span 5; grid-row: span 2; }
+  .tile--5 { grid-column: 6 / span 7; grid-row: span 2; }
+
+  @keyframes shine {
+    0%, 65% { transform: translateX(-60%); }
+    75% { transform: translateX(60%); }
+    100% { transform: translateX(60%); }
   }
 
-  @keyframes slide {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+  @media (max-width: 960px) {
+    .mosaic { grid-template-columns: repeat(6, 1fr); grid-auto-rows: 90px; }
+    .tile--1 { grid-column: 1 / span 6; grid-row: span 4; }
+    .tile--2 { grid-column: 1 / span 3; grid-row: span 2; }
+    .tile--3 { grid-column: 4 / span 3; grid-row: span 2; }
+    .tile--4 { grid-column: 1 / span 3; grid-row: span 2; }
+    .tile--5 { grid-column: 4 / span 3; grid-row: span 2; }
   }
-
-  @media (max-width: 720px) {
-    .gallery { padding: 60px 0; }
-    .card { width: 260px; height: 160px; }
+  @media (max-width: 640px) {
+    .gallery { padding: 70px 0; }
+    .mosaic { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 80px; gap: 10px; }
+    .tile { --scale: 1; }
+    .tile--1 { grid-column: 1 / span 4; grid-row: span 4; }
+    .tile--2 { grid-column: 1 / span 2; grid-row: span 2; }
+    .tile--3 { grid-column: 3 / span 2; grid-row: span 2; }
+    .tile--4 { grid-column: 1 / span 2; grid-row: span 2; }
+    .tile--5 { grid-column: 3 / span 2; grid-row: span 2; }
   }
 </style>

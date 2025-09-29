@@ -2,24 +2,108 @@
 const {
   bg = 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=1920&auto=format&fit=crop',
   setup = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop',
-  person = 'https://images.unsplash.com/photo-1587614203976-365c74645e83?q=80&w=1200&auto=format&fit=crop'
+  person = 'https://images.unsplash.com/photo-1587614203976-365c74645e83?q=80&w=1200&auto=format&fit=crop',
+  // Velocidades de parallax (px por unidad de scroll normalizada)
+  bgSpeed = 0.18,
+  midSpeed = 0.42,
+  frontSpeed = 0.08,
+  // Posicionamiento por capa (CSS background-position)
+  bgPos = 'center center',
+  midPos = 'center 60%',
+  frontPos = 'center 80%',
+  // Texto opcional para integrar en la escena
+  heading = '',
+  subtext = '',
 } = Astro.props;
 ---
 <section class="parallax" aria-label="Transición con efecto de profundidad">
-  <div class="layer layer--bg" style={`--img:url(${JSON.stringify(bg)})`} data-speed="0.2"></div>
-  <div class="layer layer--mid" style={`--img:url(${JSON.stringify(setup)})`} data-speed="0.45"></div>
-  <div class="layer layer--front">
-    <img class="silhouette" src={person} alt="Estudiante en silla ergonómica" loading="lazy" />
+  <div class="layer layer--bg" style={`--img:url(${JSON.stringify(bg)}); --pos:${bgPos}`} data-speed={String(bgSpeed)}></div>
+  <div class="layer layer--mid" style={`--img:url(${JSON.stringify(setup)}); --pos:${midPos}`} data-speed={String(midSpeed)}></div>
+  { (heading || subtext) && (
+    <div class="layer layer--text" data-speed="0.12">
+      <div class="caption">
+        {heading && <h2 class="caption__title">{heading}</h2>}
+        {subtext && <p class="caption__text">{subtext}</p>}
+      </div>
+    </div>
+  ) }
+  <div class="layer layer--front" style={`--pos:${frontPos}`}>
+    <img class="silhouette" src={person} alt="Estudiante en silla ergonómica" loading="lazy" data-speed={String(frontSpeed)} />
   </div>
 </section>
 
 <script>
+  const sectionEl = document.currentScript && document.currentScript.closest ? document.currentScript.closest('.parallax') : document.querySelector('.parallax');
+  /**
+   * Clamp a number between two bounds.
+   * @param {number} n
+   * @param {number} a
+   * @param {number} b
+   * @returns {number}
+   */
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  /**
+   * Linear interpolation between a and b by t.
+   * @param {number} a
+   * @param {number} b
+   * @param {number} t
+   * @returns {number}
+   */
+  const lerp = (a, b, t) => a + (b - a) * t;
+
   const onScroll = () => {
     const y = window.scrollY;
-    for (const el of document.querySelectorAll('.parallax .layer[data-speed]')) {
+    // Capas de fondo/media con data-speed
+    document.querySelectorAll('.parallax .layer[data-speed]').forEach((el) => {
       const speed = parseFloat(el.getAttribute('data-speed') || '0');
-      el.style.transform = `translate3d(0, ${y * speed * -0.25}px, 0)`;
-    }
+      el.setAttribute('style', `${el.getAttribute('style')}; --ty:${(y * speed * -0.25).toFixed(2)}px`);
+      /** @type {HTMLElement} */ (el).style.transform = `translate3d(0, var(--ty), 0)`;
+    });
+
+    // Progreso de la sección en viewport para animaciones coreografiadas
+    if (sectionEl) {
+      const rect = sectionEl.getBoundingClientRect();
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      // progreso 0->1 cuando la sección entra y se recorre
+      const top = clamp(1 - (rect.top / vh), -0.2, 1.2); // margen extra
+      const bottom = clamp(1 - ((rect.bottom - vh) / vh), 0, 1);
+      const progress = clamp((top + bottom) * 0.5, 0, 1);
+
+      // Zoom en capa media: 1.03 -> 1.18 aprox con easing suave
+      const ease = (/** @type {number} */ t) => 1 - Math.pow(1 - t, 3);
+      const z = lerp(1.03, 1.18, ease(progress));
+      const mid = document.querySelector('.parallax .layer--mid');
+      if (mid) /** @type {HTMLElement} */ (mid).style.transform = `translate3d(0, var(--ty, 0px), 0) scale(${z.toFixed(3)})`;
+
+      // Crossfade: el fondo baja opacidad, la media sube opacidad según progreso
+      const bgEl = document.querySelector('.parallax .layer--bg');
+      if (bgEl) /** @type {HTMLElement} */ (bgEl).style.opacity = String(lerp(1, 0.75, ease(progress)).toFixed(3));
+      if (mid) /** @type {HTMLElement} */ (mid).style.opacity = String(lerp(0.9, 1, ease(progress)).toFixed(3));
+
+      // Texto: aparece más temprano y se desplaza levemente hacia arriba
+      const txt = document.querySelector('.parallax .layer--text .caption');
+      if (txt) {
+        const tText = clamp((progress - 0.2) / 0.25, 0, 1);
+        const eText = ease(tText);
+        const tyText = lerp(16, 0, eText); // 16% -> 0%
+        /** @type {HTMLElement} */ (txt).style.opacity = String(eText);
+        /** @type {HTMLElement} */ (txt).style.transform = `translateY(${tyText}%)`;
+      }
+
+      // Entrada de silueta desde abajo: aparece después del 60% de scroll
+      const sil = document.querySelector('.parallax .silhouette[data-speed]');
+      if (sil) {
+        const s = parseFloat(sil.getAttribute('data-speed') || '0');
+        const t = clamp((progress - 0.6) / 0.3, 0, 1); // tramo 0.6 -> 0.9
+        const op = lerp(0, 1, ease(t));
+        const base = 30; // parte baja
+        const target = 10; // posición final
+        const ty = lerp(base, target, ease(t));
+        // Parallax leve + desplazamiento coreografiado
+        const ypx = (y * s * -0.15);
+        /** @type {HTMLElement} */ (sil).style.opacity = String(op);
+        /** @type {HTMLElement} */ (sil).style.transform = `translateY(calc(${ty}% + ${ypx.toFixed(2)}px))`;
+      }
   };
   let ticking = false;
   const rafScroll = () => {
@@ -52,7 +136,7 @@ const {
     inset: 0;
     background-image: var(--img);
     background-size: cover;
-    background-position: center;
+    background-position: var(--pos, center);
     will-change: transform;
     transform: translate3d(0,0,0);
   }
@@ -74,20 +158,25 @@ const {
   }
 
   .silhouette {
-    width: min(40vw, 520px);
-    max-width: 90%;
-    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.55)) saturate(0.9);
-    transform: translateY(10%);
-    animation: focusIn 1.2s ease 0.2s both;
+    width: min(42vw, 560px);
+    max-width: 92%;
+    filter: drop-shadow(0 24px 48px rgba(0,0,0,0.55)) saturate(0.95);
+    transform: translateY(30%);
+    opacity: 0;
+    transition: transform 400ms cubic-bezier(.2,.7,.2,1), opacity 350ms ease;
+    will-change: transform, opacity;
+    position: relative;
+  }
+  .silhouette::after {
+    content: ""; position: absolute; inset: -6% -4% -2% -4%; pointer-events: none;
+    background: radial-gradient(60% 40% at 50% 80%, rgba(124,58,237,0.15), transparent 60%);
+    filter: blur(18px);
   }
 
-  @keyframes focusIn {
-    from { opacity: 0; transform: translateY(20%); }
-    to { opacity: 1; transform: translateY(10%); }
-  }
+  /* Animación CSS eliminada: la aparición se controla con scroll en JS */
 
   @media (max-width: 720px) {
     .parallax { height: 100vh; }
-    .silhouette { width: min(60vw, 380px); }
+    .silhouette { width: min(62vw, 400px); }
   }
 </style>
