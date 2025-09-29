@@ -278,7 +278,7 @@ const { products = [] } = Astro.props as {
   .eta small { color: #9ca3af; }
 
   .btn { cursor: pointer; border: none; border-radius: 10px; padding: 12px 16px; }
-  .btn--primary { background: #7c3aed; color: white; box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+  .btn--primary { background: #7c3aed; color: white; box-shadow: 0 8px 24px rgba(124,58,237,0.35); width: 100%; }
 
   .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.35); color: #fff; cursor: pointer; display: grid; place-items: center; z-index: 10; }
   .nav--left { left: 16px; }
@@ -296,9 +296,12 @@ const { products = [] } = Astro.props as {
   .modal__body img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 10px; object-fit: cover; }
 
   @media (max-width: 1024px) {
-    .svc__inner { grid-template-columns: 1fr; }
+    .svc { padding: 90px 14px 60px; }
+    .svc__inner { grid-template-columns: 1fr; gap: 16px; }
     .svc__img { height: 320px; }
     .svc__left, .svc__right .card { position: static; }
+    .issues { gap: 12px; }
+    .issue { padding: 12px; }
     .nav { display: none; }
   }
 </style>
