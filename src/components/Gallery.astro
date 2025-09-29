@@ -11,7 +11,7 @@ const items = images.length ? images : [
 <section class="gallery" aria-label="Galería de setups de PC">
   <div class="wrap">
     <div class="mosaic" role="list">
-      {items.slice(0,5).map((src, i) => (
+      {items.slice(0,5).map((src: string, i: number) => (
         <figure class={`tile tile--${i+1}`} role="listitem" data-i={i} aria-roledescription="card" data-depth={(() => {
           // Profundidad para parallax por tile
           const depths = [0.28, 0.18, 0.2, 0.12, 0.16];
@@ -29,7 +29,7 @@ const items = images.length ? images : [
 <script>
   // Reveal al entrar en viewport y efecto tilt al hover
   const section = document.currentScript && document.currentScript.closest ? document.currentScript.closest('.gallery') : document.querySelector('.gallery');
-  const tiles = Array.from(document.querySelectorAll('.tile'));
+  const tiles = Array.from(document.querySelectorAll<HTMLElement>('.tile'));
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       const el = e.target;
@@ -40,8 +40,8 @@ const items = images.length ? images : [
   }, { rootMargin: '0px 0px -10% 0px', threshold: 0.2 });
   tiles.forEach((t, idx) => { t.style.setProperty('--delay', `${idx * 90}ms`); io.observe(t); });
 
-  const handleMove = (ev) => {
-    const el = ev.currentTarget;
+  const handleMove = (ev: MouseEvent) => {
+    const el = ev.currentTarget as HTMLElement;
     const rect = el.getBoundingClientRect();
     const x = (ev.clientX - rect.left) / rect.width - 0.5;
     const y = (ev.clientY - rect.top) / rect.height - 0.5;
@@ -50,8 +50,8 @@ const items = images.length ? images : [
     el.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(2)}%`);
     el.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(2)}%`);
   };
-  const resetMove = (ev) => {
-    const el = ev.currentTarget;
+  const resetMove = (ev: MouseEvent) => {
+    const el = ev.currentTarget as HTMLElement;
     el.style.setProperty('--rx', `0deg`);
     el.style.setProperty('--ry', `0deg`);
   };

@@ -32,7 +32,7 @@ const {
   </div>
 </section>
 
-<script>
+<script is:inline>
   const sectionEl = document.currentScript && document.currentScript.closest ? document.currentScript.closest('.parallax') : document.querySelector('.parallax');
   /**
    * Clamp a number between two bounds.
@@ -41,6 +41,7 @@ const {
    * @param {number} b
    * @returns {number}
    */
+  /** @param {number} n @param {number} a @param {number} b */
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
   /**
    * Linear interpolation between a and b by t.
@@ -49,12 +50,13 @@ const {
    * @param {number} t
    * @returns {number}
    */
+  /** @param {number} a @param {number} b @param {number} t */
   const lerp = (a, b, t) => a + (b - a) * t;
 
   const onScroll = () => {
     const y = window.scrollY;
     // Capas de fondo/media con data-speed
-    document.querySelectorAll('.parallax .layer[data-speed]').forEach((el) => {
+    (document.querySelectorAll('.parallax .layer[data-speed]')).forEach((el) => {
       const speed = parseFloat(el.getAttribute('data-speed') || '0');
       el.setAttribute('style', `${el.getAttribute('style')}; --ty:${(y * speed * -0.25).toFixed(2)}px`);
       /** @type {HTMLElement} */ (el).style.transform = `translate3d(0, var(--ty), 0)`;
@@ -70,27 +72,32 @@ const {
       const progress = clamp((top + bottom) * 0.5, 0, 1);
 
       // Zoom en capa media: 1.03 -> 1.18 aprox con easing suave
-      const ease = (/** @type {number} */ t) => 1 - Math.pow(1 - t, 3);
+      /** @param {number} t */
+      const ease = (t) => 1 - Math.pow(1 - t, 3);
       const z = lerp(1.03, 1.18, ease(progress));
+      /** @type {HTMLElement|null} */
       const mid = document.querySelector('.parallax .layer--mid');
-      if (mid) /** @type {HTMLElement} */ (mid).style.transform = `translate3d(0, var(--ty, 0px), 0) scale(${z.toFixed(3)})`;
+      if (mid) (mid).style.transform = `translate3d(0, var(--ty, 0px), 0) scale(${z.toFixed(3)})`;
 
       // Crossfade: el fondo baja opacidad, la media sube opacidad según progreso
+      /** @type {HTMLElement|null} */
       const bgEl = document.querySelector('.parallax .layer--bg');
-      if (bgEl) /** @type {HTMLElement} */ (bgEl).style.opacity = String(lerp(1, 0.75, ease(progress)).toFixed(3));
-      if (mid) /** @type {HTMLElement} */ (mid).style.opacity = String(lerp(0.9, 1, ease(progress)).toFixed(3));
+      if (bgEl) (bgEl).style.opacity = String(lerp(1, 0.75, ease(progress)).toFixed(3));
+      if (mid) (mid).style.opacity = String(lerp(0.9, 1, ease(progress)).toFixed(3));
 
       // Texto: aparece más temprano y se desplaza levemente hacia arriba
+      /** @type {HTMLElement|null} */
       const txt = document.querySelector('.parallax .layer--text .caption');
       if (txt) {
         const tText = clamp((progress - 0.2) / 0.25, 0, 1);
         const eText = ease(tText);
         const tyText = lerp(16, 0, eText); // 16% -> 0%
-        /** @type {HTMLElement} */ (txt).style.opacity = String(eText);
-        /** @type {HTMLElement} */ (txt).style.transform = `translateY(${tyText}%)`;
+        (txt).style.opacity = String(eText);
+        (txt).style.transform = `translateY(${tyText}%)`;
       }
 
       // Entrada de silueta desde abajo: aparece después del 60% de scroll
+      /** @type {HTMLElement|null} */
       const sil = document.querySelector('.parallax .silhouette[data-speed]');
       if (sil) {
         const s = parseFloat(sil.getAttribute('data-speed') || '0');
@@ -101,9 +108,10 @@ const {
         const ty = lerp(base, target, ease(t));
         // Parallax leve + desplazamiento coreografiado
         const ypx = (y * s * -0.15);
-        /** @type {HTMLElement} */ (sil).style.opacity = String(op);
-        /** @type {HTMLElement} */ (sil).style.transform = `translateY(calc(${ty}% + ${ypx.toFixed(2)}px))`;
+        (sil).style.opacity = String(op);
+        (sil).style.transform = `translateY(calc(${ty}% + ${ypx.toFixed(2)}px))`;
       }
+    }
   };
   let ticking = false;
   const rafScroll = () => {
