@@ -37,12 +37,14 @@
     </body>
     <style>
         :root {
+            /* Dark default */
             --bg: #0a0a0a;
             --text: #e5e7eb;
             --muted: #9ca3af;
             --accent: #7c3aed;
             --accent-2: #06b6d4;
             --card: #111214;
+            --border: rgba(255,255,255,0.06);
         }
 
         html,
@@ -55,6 +57,9 @@
             font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
         }
 
+        /* Permite que los controles del navegador se adapten al tema */
+        html { color-scheme: dark light; }
+
         main { min-height: 80vh; padding-top: 64px; }
 
         .site-header {
@@ -65,7 +70,7 @@
             z-index: 50;
             backdrop-filter: blur(8px);
             background: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.15));
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid var(--border);
             min-height: 56px;
         }
 
@@ -105,11 +110,25 @@
         .menu a:hover { opacity: 1; color: white; }
 
         .site-footer {
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-top: 1px solid var(--border);
             padding: 40px 20px;
             text-align: center;
             color: var(--muted);
             background: #0b0c0e;
+        }
+
+        /* Light mode */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #ffffff;
+                --text: #111827;
+                --muted: #4b5563;
+                --card: #f7f7f9;
+                --border: rgba(0,0,0,0.08);
+                /* accents conservan la marca */
+            }
+            .site-footer { background: #f9fafb; }
+            .site-header.scrolled .logo { color: var(--accent); }
         }
 
         @media (max-width: 720px) {
